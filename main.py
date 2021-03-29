@@ -50,11 +50,20 @@ if __name__ == '__main__':
     # print(train_list)
     print(test_list)
 
-    dot_data = tree.export_graphviz(clfs[test_list[0][0]].estimators_[1], out_file=None, filled=True,
-                                    feature_names=["pelvic_incidence", "pelvic_tilt", "lumbar_lordosis_angle",
-                                                   "sacral_slope", "pelvic_radius", "degree_spondylolisthesis"],
-                                    class_names=["Hernia", "Normal", "Spondylolisthesis"], rounded=True,
-                                    special_characters=True)
 
-    graph_training = graphviz.Source(dot_data)
-    graph_training.render('Graph', view=True)
+    clf_loc = test_list[0][0]
+    num_of_estimator = clf_loc + 1
+
+    print(str(clf_loc) + ': ')
+
+    print(clfs[clf_loc])
+
+    for i in range (0, num_of_estimator):
+        dot_data = tree.export_graphviz(clfs[clf_loc].estimators_[i], out_file=None, filled=True,
+                                        feature_names=["pelvic_incidence", "pelvic_tilt", "lumbar_lordosis_angle",
+                                                       "sacral_slope", "pelvic_radius", "degree_spondylolisthesis"],
+                                        class_names=["Hernia", "Normal", "Spondylolisthesis"], rounded=True,
+                                        special_characters=True)
+
+        graph_training = graphviz.Source(dot_data)
+        graph_training.render('Graph' + str(i), view=True)
