@@ -9,6 +9,8 @@ from sklearn import preprocessing
 import graphviz
 import matplotlib.pyplot as plt
 
+from sklearn.metrics import confusion_matrix
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     filepath = "./column_3C.dat"
@@ -20,7 +22,7 @@ if __name__ == '__main__':
     x = df.drop('class', axis=1)
     y = df['class']
 
-    train_data, test_data, train_label, test_label = train_test_split(x, y, test_size=0.3)
+    train_data, test_data, train_label, test_label = train_test_split(x, y, test_size=0.2)
 
     train_list = []
     test_list = []
@@ -29,8 +31,8 @@ if __name__ == '__main__':
         clf = RandomForestClassifier(n_estimators=i)
         clf = clf.fit(train_data, train_label)
 
-        # train_prediction = clf.predict(train_data)
-        # train_accuracy = accuracy_score(train_label, train_prediction)
+        train_prediction = clf.predict(train_data)
+        train_accuracy = accuracy_score(train_label, train_prediction)
 
         test_prediction = clf.predict(test_data)
         clfs.append(clf)
@@ -62,17 +64,30 @@ if __name__ == '__main__':
 
     best_forest = clfs[clf_loc-1]
 
-    # print(clfs[clf_loc])
+    print('Component Tree:')
 
-    # for i in range (0, num_of_estimator):
-    #     dot_data = tree.export_graphviz(clfs[clf_loc].estimators_[i], out_file=None, filled=True,
-    #                                     feature_names=["pelvic_incidence", "pelvic_tilt", "lumbar_lordosis_angle",
-    #                                                    "sacral_slope", "pelvic_radius", "degree_spondylolisthesis"],
-    #                                     class_names=["Hernia", "Normal", "Spondylolisthesis"], rounded=True,
-    #                                     special_characters=True)
-    #
-    #     graph_training = graphviz.Source(dot_data)
-    #     graph_training.render('Graph' + str(i), view=True)
+    for i in range(0, clf_loc):
+        dot_data = tree.export_graphviz(best_forest.estimators_[i], out_file=None, filled=True,
+                                        feature_names=["pelvic_incidence", "pelvic_tilt", "lumbar_lordosis_angle",
+                                                       "sacral_slope", "pelvic_radius", "degree_spondylolisthesis"],
+                                        class_names=["Hernia", "Normal", "Spondylolisthesis"], rounded=True,
+                                        special_characters=True)
+
+        graph_training = graphviz.Source(dot_data)
+        graph_training.render('Graph' + str(i+1), view=True)
+        tree_test_prediction = best_forest.estimators_[i].predict(test_data)
+        tmp_list = []
+        for result in tree_test_prediction:
+            if str(int(result)) == '0':
+                tmp_list.append('DH')
+            elif str(int(result)) == '1':
+                tmp_list.append('NO')
+            else:
+                tmp_list.append('SL')
+
+        print(str(i+1) + ': ' + str(accuracy_score(test_label, tmp_list)))
+        print(confusion_matrix(test_label, tmp_list))
+
 
     importances = best_forest.feature_importances_
 
